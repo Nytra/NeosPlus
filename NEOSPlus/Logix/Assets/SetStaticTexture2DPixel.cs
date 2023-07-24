@@ -20,9 +20,9 @@ public class SetStaticTexture2DPixel : LogixNode
 
     public readonly Impulse OnStarted;
 
-    public readonly Impulse OnDone;
+    public readonly Impulse OnFinished;
 
-    public readonly Impulse OnFail;
+    public readonly Impulse OnFailed;
 
     [ImpulseTarget]
     public void SetPixel()
@@ -35,8 +35,6 @@ public class SetStaticTexture2DPixel : LogixNode
         {
             if (texture != null)
             {
-                //color existingColor = texture.Asset.Data.GetPixel(position.x, position.y, mipLevel);
-                //color existingColor = texture.Asset.GetOriginalTextureData().GetPixel(position.x, position.y, mipLevel);
                 StartTask(async delegate
                 {
                     OnStarted.Trigger();
@@ -47,11 +45,8 @@ public class SetStaticTexture2DPixel : LogixNode
                     try
                     {
                         Task<Bitmap2D> thing = texture.Asset.GetOriginalTextureData();
-                        //UniLog.Log("a");
                         await thing;
-                        //UniLog.Log("b");
                         color existingColor = thing.Result.GetPixel(position.x, position.y, mipLevel);
-                        //UniLog.Log("c");
                         //UniLog.Log("existingColor: " + existingColor.ToString());
                         if (existingColor != c)
                         {
@@ -70,44 +65,47 @@ public class SetStaticTexture2DPixel : LogixNode
 
                         if (flag)
                         {
-                            OnDone.Trigger();
+                            OnFinished.Trigger();
                         }
                         else
                         {
                             //UniLog.Log("Hello2!");
                             texture.Process((B) => { B.SetPixel(position.x, position.y, c, mipLevel); return B; }, null);
-                            while (!texture.IsAssetAvailable)
+
+                            while (texture.Asset != null)
                             {
-                                // wait until asset available
-                                await Task.Delay(25);
+                                // wait until asset becomes null
+                                //UniLog.Log("In wait loop1");
+                                await Task.Delay(1);
                             }
-                            OnDone.Trigger();
+                            while (texture.Asset == null)
+                            {
+                                // wait until asset becomes not null
+                                //niLog.Log("In wait loop2");
+                                await Task.Delay(1);
+                            }
+                            OnFinished.Trigger();
                         }
                         //UniLog.Log("Hello3!");
                     }
                     catch (Exception e)
                     {
-                        UniLog.Error("Error inside try catch 2");
+                        //UniLog.Error("Error inside try catch 2");
                         UniLog.Error(e.ToString());
-                        OnFail.Trigger();
+                        OnFailed.Trigger();
                     }
                 });
-
-                // TODO:
-                // OnDone fires too early?
-                // Needs extra updates delay after OnDone to not cause errors
-                // Maybe waiting for Asset URL to change is not enough?
             }
             else
             {
-                OnFail.Trigger();
+                OnFailed.Trigger();
             }
         }
         catch (Exception e)
         {
-            UniLog.Error("Error inside try catch 1");
+            //UniLog.Error("Error inside try catch 1");
             UniLog.Error(e.ToString());
-            OnFail.Trigger();
+            OnFailed.Trigger();
         }
     }
 }
