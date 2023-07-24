@@ -76,7 +76,7 @@ public class SetStaticTexture2DPixel : LogixNode
                         {
                             //UniLog.Log("Hello2!");
                             texture.Process((B) => { B.SetPixel(position.x, position.y, c, mipLevel); return B; }, null);
-                            while (texture.Asset == null)
+                            while (!texture.IsAssetAvailable)
                             {
                                 // wait until asset available
                                 await Task.Delay(25);
