@@ -13,12 +13,6 @@ namespace FrooxEngine
         [HideInInspector]
         public readonly SyncList<Sync<color>> PixelArray;
 
-        //public readonly SyncArray<color> PixelArray;
-
-        //public readonly Sync<Bitmap2D> Bitmap;
-
-        //protected override int2 GenerateSize => Bitmap.Value.Size;
-
         private int GetPixelIndex(int x, int y)
         {
             return y * tex2D.Size.x + x;
@@ -49,9 +43,9 @@ namespace FrooxEngine
 
         public void ShiftHue(float shift)
         {
-            this.RunSynchronously(() => 
+            this.RunSynchronously(() =>
             {
-                foreach(Sync<color> sync in PixelArray)
+                foreach (Sync<color> sync in PixelArray)
                 {
                     color c = sync.Value;
                     ColorHSV hsv = new ColorHSV(in c);
@@ -65,9 +59,8 @@ namespace FrooxEngine
         protected override void OnAwake()
         {
             base.OnAwake();
-            Sync<int2> size = Size;
             int2 v = int2.One;
-            size.Value = v * 4;
+            this.Size.Value = v * 4;
             FilterMode.Value = TextureFilterMode.Point;
         }
 
