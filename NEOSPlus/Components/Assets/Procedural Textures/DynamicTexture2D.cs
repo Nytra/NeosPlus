@@ -10,8 +10,19 @@ namespace FrooxEngine
     [Category("Assets/Procedural Textures")]
     public class DynamicTexture2D : ProceduralTexture
     {
-        [HideInInspector]
-        public readonly SyncList<Sync<color>> PixelArray;
+        //[HideInInspector]
+        //public readonly SyncList<Sync<color>> PixelArray;
+
+        public readonly Sync<bool> Colors;
+        public readonly Sync<bool> Normals;
+        public readonly Sync<Bitmap2D> Bitmap;
+
+        protected override void UpdateTextureData(Bitmap2D tex2d)
+        {
+            //uploadHint.
+        }
+
+        public Bitmap2D Texture2D => tex2D;
 
         private int GetPixelIndex(int x, int y)
         {
@@ -73,10 +84,6 @@ namespace FrooxEngine
         {
         }
 
-        protected override void ClearTextureData()
-        {
-        }
-
         private void Resize(int width, int height)
         {
             this.RunSynchronously(() =>
@@ -112,6 +119,44 @@ namespace FrooxEngine
                     }
                 }
             }
+        }
+
+        protected override void ClearTextureData()
+        {
+            tex2D?.Clear(color.Clear);
+        }
+
+        public new void BuildInspectorUI(UIBuilder ui)
+        {
+            base.BuildInspectorUI(ui);
+            ui.Button("Refresh Texture", OnRefreshTexture);
+            ui.Button("Clear Texture", OnClearTexture);
+        }
+
+        [SyncMethod]
+        private void OnClearTexture(IButton button, ButtonEventData eventData)
+        {
+            button.Enabled = false;
+            ClearTexture();
+        }
+
+        [ImpulseTarget]
+        public void ClearTexture()
+        {
+            Texture2D?.Clear(color.Clear);
+        }
+
+        [SyncMethod]
+        private void OnRefreshTexture(IButton button, ButtonEventData eventData)
+        {
+            button.Enabled = false;
+            RefreshTexture();
+        }
+
+        [ImpulseTarget]
+        public void RefreshTexture()
+        {
+            MarkChangeDirty();
         }
     }
 }
